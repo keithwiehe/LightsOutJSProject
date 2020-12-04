@@ -23,14 +23,14 @@
         mLightsOn++;
         document.getElementById("button"+num).style.background="yellow";
       }
-      console.log("mGridArray[" + i + " ][" + k + "] has a value of: " + mGridArray[i][k]);
+      //console.log("mGridArray[" + i + " ][" + k + "] has a value of: " + mGridArray[i][k]);
     }//end k for loop
   }//end for loop
   if(mLightsOn == Dimension * Dimension || mLightsOn == 0)
   {
     init();
   }
-  console.log("New Game with lights on value of: " + mLightsOn);
+  //console.log("New Game with lights on value of: " + mLightsOn);
 }//end init
 
 
@@ -143,3 +143,168 @@
   document.getElementById("button33").onclick = function() {Switch(5,3)};
   document.getElementById("button34").onclick = function() {Switch(5,4)};
   document.getElementById("button35").onclick = function() {Switch(5,5)};
+
+
+//Project 2
+/**    button Reference
+* mGridMatrix[i][k] = 1 LIGHT IS ON
+* mGridMatrix[i][k] = 0 LIGHT IS OUT
+*/
+  let DimensionSquared = 36;
+  var mGridMatrix = [];//1x36 matrix for where to click to solve
+  var DMatrix = []; //Default 36x36 matrix for solving GaussElim with
+
+  // var mMatrix;
+//only works for 6x6 lights out
+function solver()
+{
+  console.log("Solver called:");
+  for(i=0; i < Dimension; i++)
+  {
+    for(j=0; j < Dimension; j++)
+    {
+      if(mGridArray[i][j]==1)
+      {
+        mGridMatrix.push(0);
+      } else{
+        mGridMatrix.push(1);
+      }
+    }
+  }
+  GaussElim(mGridMatrix);
+  ImplementSolution();
+}
+
+/*
+* Function performs Gaussian Elimination to find which buttons to press
+* Reminder since only zeros and ones. 1+1=0, 1+0=1, 0+1=1, 0+0=0
+*/
+function GaussElim(mGridMatrix)
+{
+  sixBySixMatrix();
+  //Looking for row organization
+  let cur_row = 0;
+  for(cur_col = 0; cur_col < DimensionSquared; cur_col++)
+  {
+    pivotRow = Pivot(cur_row, cur_col);
+    if(pivotRow > -1 && pivotRow < DimensionSquared)
+    {
+      //swap DMatrix row values
+      var temp = DMatrix[cur_row];
+      DMatrix[cur_row] = DMatrix[pivotRow];
+      DMatrix[pivotRow] = temp;
+      //swap mGridMatrix row values
+      temp = mGridMatrix[cur_row];
+      mGridMatrix[cur_row] = mGridMatrix[pivotRow];
+      mGridMatrix[pivotRow] = temp;
+        //Eliminate all other 1's in current row
+      for(secondRow = 0; secondRow < DimensionSquared; secondRow++)
+      {
+        if(DMatrix[secondRow][cur_col] == 1 && secondRow != cur_row)
+        {
+          ManipulateTwoRows(cur_row, secondRow);
+        }
+      }
+    }//end if on pivotrow
+
+    cur_row++;
+  }//end i for loop
+}
+
+//subtract pivot row from second row to achieve RREF
+function ManipulateTwoRows(pivotRow, secondRow)
+{
+  for(i = 0; i < DimensionSquared; i++)
+  {
+    if(DMatrix[pivotRow][i] == 1 && DMatrix[secondRow][i] == 1)
+    {
+      DMatrix[secondRow][i] = 0;
+    }
+    else if(DMatrix[pivotRow][i] == 1 && DMatrix[secondRow][i] == 0){
+      DMatrix[secondRow][i] = 1;
+    }
+  }
+  //change variable in mGridMatrix if Appropriate
+  if(mGridMatrix[pivotRow] == 1 && mGridMatrix[secondRow] == 1)
+  {
+     mGridMatrix[secondRow] = 0;
+  }
+  else if(mGridMatrix[pivotRow] == 1 && mGridMatrix[secondRow] == 0)
+  {
+     mGridMatrix[secondRow] = 1;
+  }
+}
+
+//Used to find which row to next place in the Gaussian Elimination method
+function Pivot(row, col)
+{
+  for(i = row; i < DimensionSquared; i++)
+  {
+    //Want that light off not on
+    if(DMatrix[i][col] == 1)
+    {
+      console.log("row: "+ row + " i in pivot: " +i);
+      return i;
+    }
+  }
+  //didn't find it -1 is out of bounds
+  return -1;
+}
+
+function sixBySixMatrix()
+{ //wrte out the default matrix here for Gaussian elimination
+
+    DMatrix =
+ [[1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [1,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0,0,1,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,1],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1]]
+}
+
+function ImplementSolution()
+{
+  console.log("ImplementSolution: " + mGridMatrix);
+  for(i=100; i < 136; i++)
+  {
+    var buttonID = document.getElementById("button"+i);
+    if(mGridMatrix[i-100] == 1)
+    {
+      buttonID.style.background="red";
+    }else
+    {
+      buttonID.style.background="black";
+    }
+  }
+}
