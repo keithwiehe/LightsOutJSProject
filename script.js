@@ -30,6 +30,7 @@
   {
     init();
   }
+  isSolvedfound = false;
   //console.log("New Game with lights on value of: " + mLightsOn);
 }//end init
 
@@ -66,6 +67,7 @@
         }
       }
     }
+    isSolvedfound = false;
   }
 
 
@@ -153,12 +155,19 @@
   let DimensionSquared = 36;
   var mGridMatrix = [];//1x36 matrix for where to click to solve
   var DMatrix = []; //Default 36x36 matrix for solving GaussElim with
+  var isSolvedfound = false;
 
   // var mMatrix;
 //only works for 6x6 lights out
 function solver()
 {
   console.log("Solver called:");
+  //saves computation time by not resolving the same grid.
+  if(isSolvedfound)
+    return;
+  //reset matrices so that old solutions don't interfere
+  mGridMatrix = [];
+  DMatrix = [];
   for(i=0; i < Dimension; i++)
   {
     for(j=0; j < Dimension; j++)
@@ -173,6 +182,7 @@ function solver()
   }
   GaussElim(mGridMatrix);
   ImplementSolution();
+  isSolvedfound = true;
 }
 
 /*
